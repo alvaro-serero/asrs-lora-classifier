@@ -8,10 +8,12 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "ipywidgets>=8.1.9",
     "matplotlib>=3.11.2",
     "pandas>=3.1.0",
     "pyarrow>=26.0.0",
     "scikit-learn>=1.9.1",
+    "torch>=2.15.0",
     "transformers>=5.22.2",
 ]
 
