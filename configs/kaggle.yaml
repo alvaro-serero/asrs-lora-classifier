@@ -1,0 +1,32 @@
+# Kaggle T4 (16 GB). First use: smoke test with max_steps 200 to measure speed,
+# then set train_subsample / epochs / max_steps for the real run.
+run_name: kaggle-r8
+seed: 42
+device: auto
+wandb: true
+
+model:
+  name: Qwen/Qwen3-0.6B-Base
+  dtype: float16      # T4 has no bfloat16 hardware; fall back to float32 if NaNs
+  max_length: 512
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+data:
+  train_subsample: null
+  val_subsample: 512    # smoke test only; null for the real run
+
+train:
+  epochs: 1
+  max_steps: 200
+  batch_size: 4
+  grad_accum: 4         # effective batch 16
+  lr_lora: 2.0e-4
+  lr_head: 1.0e-3
+  warmup_ratio: 0.05
+  eval_every: 100
+  eval_batch_size: 16

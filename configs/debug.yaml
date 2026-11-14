@@ -1,0 +1,31 @@
+# Mac (MPS) check: the 7.4 overfit run, now through src/. Should reach loss ~0 on 64 reports.
+run_name: debug
+seed: 42
+device: auto          # cuda > mps > cpu
+wandb: false
+
+model:
+  name: Qwen/Qwen3-0.6B-Base
+  dtype: bfloat16     # frozen base; LoRA and head stay float32
+  max_length: 512
+
+lora:
+  r: 8
+  alpha: 16
+  dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+data:
+  train_subsample: 64   # null = all of train
+  val_subsample: 64     # null = all of val
+
+train:
+  epochs: 8
+  max_steps: null       # stop after this many optimizer steps (null = no limit)
+  batch_size: 2
+  grad_accum: 1         # effective batch = batch_size * grad_accum
+  lr_lora: 2.0e-4
+  lr_head: 1.0e-3
+  warmup_ratio: 0.05
+  eval_every: 64        # optimizer steps between two val evaluations
+  eval_batch_size: 8
