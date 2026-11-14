@@ -6,39 +6,17 @@ Run with: uv run python -m asrs_lora_classifier.baseline_tfidf
 import json
 import time
 
-import numpy as np
-import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
+from asrs_lora_classifier.data import DATA_DIR, load_split
 from asrs_lora_classifier.loader import REPO_ROOT
+from asrs_lora_classifier.metrics import scores, tune_thresholds
 
-DATA_DIR = REPO_ROOT / "data" / "processed"
 RESULTS_DIR = REPO_ROOT / "results"
-
-
-def load_split(name):
-    return pd.read_parquet(DATA_DIR / f"{name}.parquet")
-
-
-def tune_thresholds(y_true, probs, grid=np.arange(0.05, 0.96, 0.05)):
-    """For each label, the threshold that maximises its F1."""
-    best = np.full(y_true.shape[1], 0.5)
-    for j in range(y_true.shape[1]):
-        scores = [f1_score(y_true[:, j], probs[:, j] >= t, zero_division=0) for t in grid]
-        best[j] = grid[int(np.argmax(scores))]
-    return best
-
-
-def scores(y_true, y_pred):
-    return {
-        "macro_f1": f1_score(y_true, y_pred, average="macro", zero_division=0),
-        "micro_f1": f1_score(y_true, y_pred, average="micro", zero_division=0),
-        "exact_match": float((y_true == y_pred).all(axis=1).mean()),
-    }
 
 
 def main():
