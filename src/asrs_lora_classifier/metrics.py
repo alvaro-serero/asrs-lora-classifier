@@ -29,3 +29,23 @@ def evaluate(probs, y):
         "tuned": scores(y, (probs >= thresholds).astype(int)),
     }
     return res, thresholds
+
+
+def test_report(test, y_test, probs, thresholds, labels, baseline_acns):
+    """Test scores with thresholds fixed on val, on the full test set and on the 1,000-report baseline sample."""
+
+    def score_part(y, p):
+        pred = (p >= thresholds).astype(int)
+        per_label = f1_score(y, pred, average=None, zero_division=0)
+        return {
+            "n_reports": int(len(y)),
+            "at_0.5": scores(y, (p >= 0.5).astype(int)),
+            "val_thresholds": scores(y, pred),
+            "per_label_f1": dict(zip(labels, per_label.round(4).tolist())),
+        }
+
+    in_sample = test["acn"].isin(set(baseline_acns)).to_numpy()
+    return {
+        "full_test": score_part(y_test, probs),
+        "baseline_sample": score_part(y_test[in_sample], probs[in_sample]),
+    }
