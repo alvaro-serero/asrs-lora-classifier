@@ -3,7 +3,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, PeftModel, get_peft_model
 from transformers import AutoModel
 
 
@@ -35,3 +35,13 @@ def build_classifier(model_name, n_labels, device, label_freq=None, dtype=torch.
         with torch.no_grad():
             clf.head.bias.copy_(torch.tensor(np.log(label_freq / (1 - label_freq)), dtype=torch.float32))
     return clf.to(device)
+
+
+def load_classifier(model_name, path, n_labels, device, dtype=torch.bfloat16):
+    """Rebuild a trained classifier from a folder written by train.save_checkpoint, for inference."""
+    body = AutoModel.from_pretrained(model_name, dtype=dtype)
+    hidden_size = body.config.hidden_size
+    body = PeftModel.from_pretrained(body, path)  # attaches the saved LoRA adapter (frozen)
+    clf = ASRSClassifier(body, hidden_size, n_labels)
+    clf.head.load_state_dict(torch.load(path / "head.pt", map_location="cpu"))
+    return clf.to(device).eval()
