@@ -20,6 +20,11 @@ def load_labels():
     return json.loads((DATA_DIR / "labels.json").read_text())
 
 
+def load_baseline_acns():
+    """ACNs of the 1,000 test reports shared with the frontier baseline."""
+    return json.loads((DATA_DIR / "baseline_acns.json").read_text())
+
+
 class ASRSDataset(Dataset):
     """One report = (narrative text, 0/1 label vector in the order of labels.json)."""
 
