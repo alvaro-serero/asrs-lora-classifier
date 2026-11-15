@@ -21,7 +21,7 @@ data:
 
 train:
   epochs: 1
-  max_steps: 2000      # half an epoch: r8 had plateaued by step ~1000
+  max_steps: null      # full epoch, same schedule as run 1 so the val curves compare step by step
   batch_size: 4
   grad_accum: 4         # effective batch 16
   lr_lora: 2.0e-4
