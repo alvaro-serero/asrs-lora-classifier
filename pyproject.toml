@@ -1,7 +1,7 @@
 [project]
 name = "asrs-lora-classifier"
 version = "0.1.0"
-description = "Add your description here"
+description = "LoRA fine-tuning of a small LLM for multi-label NASA ASRS incident classification, compared with TF-IDF and a frontier model"
 readme = "README.md"
 authors = [
     { name = "Alvaro Serero", email = "alvaroserero@gmail.com" }
