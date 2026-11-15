@@ -1,4 +1,4 @@
-"""TF-IDF + logistic regression baseline, evaluated on the 2023 validation set.
+"""TF-IDF + logistic regression baseline: thresholds tuned on 2023 val, then scored once on 2024-25 test.
 
 Run with: uv run python -m asrs_lora_classifier.baseline_tfidf
 """
@@ -12,9 +12,9 @@ from sklearn.metrics import f1_score
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import MultiLabelBinarizer
 
-from asrs_lora_classifier.data import DATA_DIR, load_split
+from asrs_lora_classifier.data import DATA_DIR, load_baseline_acns, load_split
 from asrs_lora_classifier.loader import REPO_ROOT
-from asrs_lora_classifier.metrics import scores, tune_thresholds
+from asrs_lora_classifier.metrics import scores, test_report, tune_thresholds
 
 RESULTS_DIR = REPO_ROOT / "results"
 
@@ -55,6 +55,14 @@ def main():
         "thresholds": dict(zip(labels, thresholds.round(2).tolist())),
     }
     (RESULTS_DIR / "tfidf_val.json").write_text(json.dumps(out, indent=2))
+
+    # Test (2024-25), read once, with the thresholds tuned on val above
+    test = load_split("test").reset_index(drop=True)
+    y_test = mlb.transform(test["labels"])
+    test_probs = clf.predict_proba(vectorizer.transform(test["narrative"]))
+    report = test_report(test, y_test, test_probs, thresholds, labels, load_baseline_acns())
+    print("test (val thresholds):", {k: round(v, 4) for k, v in report["full_test"]["val_thresholds"].items()})
+    (RESULTS_DIR / "tfidf_test.json").write_text(json.dumps({"model": "tfidf_logreg", **report}, indent=2))
 
 
 if __name__ == "__main__":
